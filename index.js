@@ -374,14 +374,20 @@ function sessionsOutputDir(realProjectPath) {
   return join(realProjectPath, 'sessions');
 }
 
-function exportSession(sessionInfo) {
+function batchSessionsOutputDir(sessionProjectPath, sourceRoot, outputRoot) {
+  if (!outputRoot) return sessionsOutputDir(sessionProjectPath);
+  const relativePath = sessionProjectPath.slice(sourceRoot.length).replace(/^\/+/, '');
+  return join(outputRoot, relativePath, 'sessions');
+}
+
+function exportSession(sessionInfo, outputDir) {
   const { file, name: sessionId, realPath } = sessionInfo;
   const messages = parseSession(file);
   const rounds = buildConversation(messages);
 
   if (rounds.length === 0) return { sessionId, skipped: true, reason: 'no conversation' };
 
-  const outDir = sessionsOutputDir(realPath);
+  const outDir = outputDir || sessionsOutputDir(realPath);
   mkdirSync(outDir, { recursive: true });
 
   const md = toMarkdown(rounds, sessionId);
@@ -466,6 +472,7 @@ program
   .requiredOption('--id <uuid>', 'Session UUID')
   .option('--from <n>', 'Start from round N', parseInt)
   .option('--to <n>', 'End at round N', parseInt)
+  .option('--output-dir <dir>', 'Output directory (default: <project>/sessions)')
   .action((opts) => {
     const found = findSessionById(opts.id);
     if (!found) {
@@ -490,7 +497,7 @@ program
       process.exit(1);
     }
 
-    const outDir = sessionsOutputDir(found.realPath);
+    const outDir = opts.outputDir ? resolve(opts.outputDir) : sessionsOutputDir(found.realPath);
     mkdirSync(outDir, { recursive: true });
 
     const md = toMarkdown(rounds, opts.id);
@@ -507,7 +514,8 @@ program
 program
   .command('export-dir <path>')
   .description('Export all sessions under a directory (and subdirectories)')
-  .action((dirPath) => {
+  .option('--output-dir <dir>', 'Root output directory (default: each project\'s own sessions/ subdir)')
+  .action((dirPath, opts) => {
     const realPath = resolve(dirPath);
     const sessions = findSessionsByDir(realPath);
 
@@ -516,12 +524,15 @@ program
       return;
     }
 
+    const outputRoot = opts.outputDir ? resolve(opts.outputDir) : null;
     console.error(chalk.gray(`Found ${sessions.length} sessions under ${realPath}`));
+    if (outputRoot) console.error(chalk.gray(`Output root: ${outputRoot}`));
     let ok = 0, skipped = 0;
 
     for (const s of sessions) {
       try {
-        const result = exportSession(s);
+        const outDir = batchSessionsOutputDir(s.realPath, realPath, outputRoot);
+        const result = exportSession(s, outDir);
         if (result.skipped) {
           console.error(chalk.yellow(`  SKIP ${s.name}: ${result.reason}`));
           skipped++;
@@ -543,6 +554,7 @@ program
   .command('update')
   .description('Re-export a single session (overwrite existing files)')
   .requiredOption('--id <uuid>', 'Session UUID')
+  .option('--output-dir <dir>', 'Output directory (default: <project>/sessions)')
   .action((opts) => {
     const found = findSessionById(opts.id);
     if (!found) {
@@ -551,7 +563,8 @@ program
     }
 
     found.realPath = getProjectRealPath(found.project);
-    const result = exportSession(found);
+    const outDir = opts.outputDir ? resolve(opts.outputDir) : null;
+    const result = exportSession(found, outDir);
 
     if (result.skipped) {
       console.error(chalk.yellow(`Skipped: ${result.reason}`));
@@ -564,7 +577,8 @@ program
 program
   .command('update-dir <path>')
   .description('Re-export all sessions under a directory (overwrite existing)')
-  .action((dirPath) => {
+  .option('--output-dir <dir>', 'Root output directory (default: each project\'s own sessions/ subdir)')
+  .action((dirPath, opts) => {
     const realPath = resolve(dirPath);
     const sessions = findSessionsByDir(realPath);
 
@@ -573,12 +587,15 @@ program
       return;
     }
 
+    const outputRoot = opts.outputDir ? resolve(opts.outputDir) : null;
     console.error(chalk.gray(`Updating ${sessions.length} sessions under ${realPath}`));
+    if (outputRoot) console.error(chalk.gray(`Output root: ${outputRoot}`));
     let ok = 0, skipped = 0;
 
     for (const s of sessions) {
       try {
-        const result = exportSession(s);
+        const outDir = batchSessionsOutputDir(s.realPath, realPath, outputRoot);
+        const result = exportSession(s, outDir);
         if (result.skipped) {
           console.error(chalk.yellow(`  SKIP ${s.name}: ${result.reason}`));
           skipped++;

@@ -36,9 +36,16 @@ cc-export list --json                # JSON 格式输出
 ```bash
 cc-export export --id <session-uuid>
 cc-export export --id <uuid> --from 5 --to 20   # 只导出第 5-20 轮
+cc-export export --id <uuid> --output-dir ./exports
 ```
 
-输出到 `<项目目录>/sessions/<uuid>.md` 和 `<uuid>.meta.md`。
+默认输出到 `<项目目录>/sessions/`。指定 `--output-dir` 后，两个文件直接输出到该目录：
+
+```text
+./exports/
+├── <uuid>.md
+└── <uuid>.meta.md
+```
 
 ---
 
@@ -46,9 +53,21 @@ cc-export export --id <uuid> --from 5 --to 20   # 只导出第 5-20 轮
 
 ```bash
 cc-export export-dir /home/ubuntu/projects/bobi-日常管理系统开发
+cc-export export-dir /home/ubuntu/projects/bobi-日常管理系统开发 --output-dir ./exports
 ```
 
-匹配该目录及所有子目录下的 session，各自输出到对应项目目录的 `sessions/` 下。
+默认时，session 分别写入其对应项目目录的 `sessions/` 子目录。指定 `--output-dir` 时，以该目录作为导出根目录，并保留相对的子项目结构：
+
+```text
+./exports/
+├── sessions/                         # 与导出源目录直接对应的 session
+│   ├── <uuid>.md
+│   └── <uuid>.meta.md
+└── frontend/
+    └── sessions/                     # 来源的子目录 session
+        ├── <uuid>.md
+        └── <uuid>.meta.md
+```
 
 ---
 
@@ -56,9 +75,10 @@ cc-export export-dir /home/ubuntu/projects/bobi-日常管理系统开发
 
 ```bash
 cc-export update --id <session-uuid>
+cc-export update --id <session-uuid> --output-dir ./exports
 ```
 
-用于 session 仍在进行时，刷新已导出的文件。
+默认覆盖 `<项目目录>/sessions/` 下的同名文件；指定 `--output-dir` 则覆盖该目录下的同名 `.md` 和 `.meta.md` 文件。
 
 ---
 
@@ -66,7 +86,10 @@ cc-export update --id <session-uuid>
 
 ```bash
 cc-export update-dir /home/ubuntu/projects/bobi-日常管理系统开发
+cc-export update-dir /home/ubuntu/projects/bobi-日常管理系统开发 --output-dir ./exports
 ```
+
+`--output-dir` 的目录映射规则与 `export-dir` 相同。
 
 ---
 
