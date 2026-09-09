@@ -1,10 +1,14 @@
 #!/usr/bin/env node
 import { readFileSync, writeFileSync, readdirSync, existsSync, mkdirSync, statSync } from 'fs';
 import { join, resolve, dirname, basename } from 'path';
+import { fileURLToPath } from 'url';
 import { homedir } from 'os';
 import { program } from 'commander';
 import inquirer from 'inquirer';
 import chalk from 'chalk';
+
+const __dirname = dirname(fileURLToPath(import.meta.url));
+const pkg = JSON.parse(readFileSync(join(__dirname, 'package.json'), 'utf-8'));
 
 const PROJECTS_DIR = join(homedir(), '.claude', 'projects');
 
@@ -405,7 +409,7 @@ function exportSession(sessionInfo, outputDir) {
 program
   .name('cc-export')
   .description('Export Claude Code sessions to Markdown')
-  .version('1.0.0');
+  .version(pkg.version);
 
 // list ────────────────────────────────────────────────────────────────────────
 program
