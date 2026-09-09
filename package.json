@@ -1,0 +1,28 @@
+{
+  "name": "cc-export",
+  "version": "1.0.0",
+  "description": "Export Claude Code sessions to Markdown with stats and token reports",
+  "main": "index.js",
+  "bin": {
+    "cc-export": "./index.js"
+  },
+  "type": "module",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "keywords": ["claude", "claude-code", "export", "markdown", "session"],
+  "author": "jeffrey0617",
+  "license": "ISC",
+  "files": [
+    "index.js",
+    "README.md"
+  ],
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {
+    "chalk": "^6.0.0",
+    "commander": "^15.0.0",
+    "inquirer": "^14.2.2"
+  }
+}

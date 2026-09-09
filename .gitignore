@@ -1,0 +1,5 @@
+node_modules/
+sessions/
+*.md
+!README.md
+package-lock.json
