@@ -1,5 +1,5 @@
 {
-  "name": "cc-export",
+  "name": "@jeffrey0617/cc-export",
   "version": "1.0.0",
   "description": "Export Claude Code sessions to Markdown with stats and token reports",
   "main": "index.js",
